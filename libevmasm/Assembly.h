@@ -47,8 +47,8 @@ class Assembly
 public:
 	explicit Assembly(std::string _name = std::string()):m_name(std::move(_name)) { }
 
-	AssemblyItem newTag() { assertThrow(m_usedTags < 0xffffffff, AssemblyException, ""); return AssemblyItem(Tag, m_usedTags++); }
-	AssemblyItem newPushTag() { assertThrow(m_usedTags < 0xffffffff, AssemblyException, ""); return AssemblyItem(PushTag, m_usedTags++); }
+	AssemblyItem newTag() { assertThrow(m_usedTags < 0xffffffff, AssemblyException, ""); std::cerr << "new tag (nonpush): " << m_usedTags << std::endl; return AssemblyItem(Tag, m_usedTags++); }
+	AssemblyItem newPushTag() { assertThrow(m_usedTags < 0xffffffff, AssemblyException, ""); std::cerr << "new pushtag: " << m_usedTags << std::endl; return AssemblyItem(PushTag, m_usedTags++); }
 	/// Returns a tag identified by the given name. Creates it if it does not yet exist.
 	AssemblyItem namedTag(std::string const& _name, size_t _params, size_t _returns, std::optional<uint64_t> _sourceID);
 	AssemblyItem newData(bytes const& _data) { util::h256 h(util::keccak256(util::asString(_data))); m_data[h] = _data; return AssemblyItem(PushData, h); }

@@ -1286,11 +1286,14 @@ void CompilerStack::assemble(
 	solAssert(compiledContract.evmAssembly, "");
 	try
 	{
+		cerr << "entering assemble() which fails" << endl;
 		// Assemble deployment (incl. runtime)  object.
 		compiledContract.object = compiledContract.evmAssembly->assemble();
 
 		// BEGIN: OVM CHANGES
+		cerr << "doing optimizer dodger for deployed";
 		rewriteOptimizerDodgingCode(compiledContract.object);
+		cerr << "did optimizer dodger for deployed";
 		// END: OVM CHANGES
 	}
 	catch (evmasm::AssemblyException const&)
@@ -1307,7 +1310,9 @@ void CompilerStack::assemble(
 		compiledContract.runtimeObject = compiledContract.evmRuntimeAssembly->assemble();
 
 		// BEGIN: OVM CHANGES
+		cerr << "doing optimizer dodger for runtime";
 		rewriteOptimizerDodgingCode(compiledContract.runtimeObject);
+		cerr << "did optimizer dodger for runtime";
 		// END: OVM CHANGES
 	}
 	catch (evmasm::AssemblyException const&)

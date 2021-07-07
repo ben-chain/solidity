@@ -127,6 +127,7 @@ void CompilerContext::simpleRewrite(string function, int _in, int _out, bool opt
 }
 
 bool CompilerContext::appendCallback(evmasm::AssemblyItem const& _i) {
+	std::cerr << "in callback with: " << _i << std::endl;
 	if (m_disable_rewrite) return false;
 	m_disable_rewrite = true;
 
@@ -188,6 +189,7 @@ bool CompilerContext::appendCallback(evmasm::AssemblyItem const& _i) {
 	bool ret = false;
 	if (_i.type() == Operation) {
 		ret = true;  // will be set to false again if we don't change the instruction
+		std::cerr << "appending instruction " << _i.instruction() << " " << std::endl;
 		switch (_i.instruction()) {
 			case Instruction::SELFBALANCE:
 			case Instruction::BALANCE:
@@ -354,6 +356,7 @@ bool CompilerContext::appendCallback(evmasm::AssemblyItem const& _i) {
 				ret = false;
 				break;
 			default:
+				cerr << "default append option" << endl;
 				ret = false;
 				break;
 		}

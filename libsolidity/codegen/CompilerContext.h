@@ -82,7 +82,9 @@ public:
 			m_runtimeSub = size_t(m_asm->newSub(m_runtimeContext->m_asm).data());
 
 		// OVM change: add append callback
+		std::cerr << "adding append callback" << std::endl;
 		m_asm->setAppendCallback(std::bind(&CompilerContext::appendCallback, this, std::placeholders::_1));
+		std::cerr << "added append callback" << std::endl;
 	}
 
 	langutil::EVMVersion const& evmVersion() const { return m_evmVersion; }

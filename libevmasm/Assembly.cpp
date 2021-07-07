@@ -561,6 +561,8 @@ LinkerObject const& Assembly::assemble() const
 	// Otherwise ensure the object is actually clear.
 	assertThrow(m_assembledObject.linkReferences.empty(), AssemblyException, "Unexpected link references.");
 
+	cerr << "here1";
+
 	LinkerObject& ret = m_assembledObject;
 
 	size_t subTagSize = 1;
@@ -617,8 +619,10 @@ LinkerObject const& Assembly::assemble() const
 	uint8_t dataRefPush = static_cast<uint8_t>(pushInstruction(bytesPerDataRef));
 	ret.bytecode.reserve(bytesRequiredIncludingData);
 
+	cerr << "got to the loop" << endl;
 	for (AssemblyItem const& i: m_items)
 	{
+		cerr << "type is: " << i.type() << " " << endl;
 		// store position of the invalid jump destination
 		if (i.type() != Tag && m_tagPositionsInBytecode[0] == numeric_limits<size_t>::max())
 			m_tagPositionsInBytecode[0] = ret.bytecode.size();
@@ -626,7 +630,10 @@ LinkerObject const& Assembly::assemble() const
 		switch (i.type())
 		{
 		case Operation:
+			cerr << "operation switch" << endl;
+			cerr << "instruction is: " << i.instruction() << endl;
 			ret.bytecode.push_back(static_cast<uint8_t>(i.instruction()));
+			cerr << "ppushed back" << endl;
 			break;
 		case PushString:
 		{
@@ -654,6 +661,7 @@ LinkerObject const& Assembly::assemble() const
 		{
 			ret.bytecode.push_back(tagPush);
 			tagRef[ret.bytecode.size()] = i.splitForeignPushTag();
+			cerr << "added to tagrefs with split [" << /* tagRef[ret.bytecode.size()].first << "," << tagRef[ret.bytecode.size()].second << "] at " <<  */ret.bytecode.size() << endl;
 			ret.bytecode.resize(ret.bytecode.size() + bytesPerTag);
 			break;
 		}
@@ -746,6 +754,7 @@ LinkerObject const& Assembly::assemble() const
 		}
 	}
 
+	cerr << "wait got here2" << endl;
 	if (!immutableReferencesBySub.empty())
 		throw
 			langutil::Error(
@@ -765,22 +774,36 @@ LinkerObject const& Assembly::assemble() const
 		ret.append(subAssemblyById(subIdPath)->assemble());
 	}
 
+	cerr << "and here3.  bytecode now is:" << endl;
+	cerr << ret.bytecode.data() << endl;
+
 	for (auto const& i: tagRef)
 	{
 		size_t subId;
 		size_t tagId;
 		tie(subId, tagId) = i.second;
+		cerr << "tag ref subId: " << subId << ", tagId: " << tagId << endl;
 		assertThrow(subId == numeric_limits<size_t>::max() || subId < m_subs.size(), AssemblyException, "Invalid sub id");
 		vector<size_t> const& tagPositions =
 			subId == numeric_limits<size_t>::max() ?
 			m_tagPositionsInBytecode :
 			m_subs[subId]->m_tagPositionsInBytecode;
 		assertThrow(tagId < tagPositions.size(), AssemblyException, "Reference to non-existing tag.");
+		cerr << "tag positions: " << endl;
+		for (auto const& tagPosition: tagPositions)
+			cerr << tagPosition << ", ";
+		cerr << endl;
 		size_t pos = tagPositions[tagId];
+		cerr << "04, assert condition: " << (pos != numeric_limits<size_t>::max()) << endl;
+		cerr << "the pos is: " << pos << endl;
 		assertThrow(pos != numeric_limits<size_t>::max(), AssemblyException, "Reference to tag without position.");
+		cerr << "05" << endl;
 		assertThrow(util::bytesRequired(pos) <= bytesPerTag, AssemblyException, "Tag too large for reserved space.");
+		cerr << "06" << endl;
 		bytesRef r(ret.bytecode.data() + i.first, bytesPerTag);
+		cerr << "07" << endl;
 		toBigEndian(pos, r);
+		cerr << "08" << endl;
 	}
 	for (auto const& [name, tagInfo]: m_namedTags)
 	{
@@ -793,6 +816,7 @@ LinkerObject const& Assembly::assemble() const
 		};
 	}
 
+	cerr << "and here4" << endl;
 	for (auto const& dataItem: m_data)
 	{
 		auto references = dataRef.equal_range(dataItem.first);
@@ -805,6 +829,7 @@ LinkerObject const& Assembly::assemble() const
 		}
 		ret.bytecode += dataItem.second;
 	}
+	cerr << "and here5" << endl;
 
 	ret.bytecode += m_auxiliaryData;
 
