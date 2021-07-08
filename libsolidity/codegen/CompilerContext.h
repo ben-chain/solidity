@@ -74,6 +74,10 @@ public:
 	{
 		if (m_runtimeContext)
 			m_runtimeSub = size_t(m_asm->newSub(m_runtimeContext->m_asm).data());
+		
+		// BEGIN: OVM CHANGE: set append callback
+		m_asm->setAppendCallback(std::bind(&CompilerContext::appendCallback, this, std::placeholders::_1));
+		// END: OVM CHANGE
 	}
 
 	langutil::EVMVersion const& evmVersion() const { return m_evmVersion; }
@@ -308,6 +312,18 @@ public:
 	void setModifierDepth(size_t _modifierDepth) { m_asm->m_currentModifierDepth = _modifierDepth; }
 
 	RevertStrings revertStrings() const { return m_revertStrings; }
+
+	// BEGIN: OVM CHANGE
+	// Functions for rewriting opcodes to OVM
+	void complexRewrite(std::string function, int _in, int _out,
+		std::string code, std::vector<std::string> const& _localVariables, bool optimize);
+	void simpleRewrite(std::string function, int _in, int _out, bool optimize);
+	bool appendCallback(evmasm::AssemblyItem const& _i);
+	// Variable to prevent callback recursion
+	bool m_disable_rewrite = false;
+	// Helper variable to add warnings only for opcodes created by user-input functions
+	bool m_is_building_user_asm = false;
+	// END: OVM CHANGE
 
 private:
 	/// Updates source location set in the assembly.

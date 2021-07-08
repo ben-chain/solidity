@@ -52,6 +52,12 @@ bool SemanticInformation::breaksCSEAnalysisBlock(AssemblyItem const& _item, bool
 		return false;
 	case Operation:
 	{
+		// BEGIN: OVM CHANGE: preserve ordering of "kall" (starts with CALLER, only way it can appear)
+		if (_item.instruction() == Instruction::CALLER)
+			return true;
+		if (_item.instruction() == Instruction::OVM_PLACEHOLDER_CALLER)
+			return true;
+		// END: OVM CHANGE
 		if (isSwapInstruction(_item) || isDupInstruction(_item))
 			return false;
 		if (_item.instruction() == Instruction::GAS || _item.instruction() == Instruction::PC)
